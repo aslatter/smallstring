@@ -1,4 +1,11 @@
 
+{-
+
+The aim is that SmallString should be competitive with
+String for comparison operations.
+
+-}
+
 import Data.SmallString as SS
 import Criterion.Main
 
@@ -20,9 +27,10 @@ main = do
             nf Set.fromList strings
     , bench "building set of small strings" $
             nf Set.fromList smallStrings
-    --, bench "nub on strings" $
-    --        nf nub strings
-    --, bench "nub on small strings" $
-    --        nf nub smallStrings
+
+    , bench "nub on strings" $
+            nf nub strings
+    , bench "nub on small strings" $
+            nf nub smallStrings
     ]
 

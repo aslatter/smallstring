@@ -42,12 +42,6 @@ instance NFData SmallString
 
 
 compareSmallString :: SmallString -> SmallString -> Ordering
-compareSmallString lhs rhs
-    = toBytes lhs `compare` toBytes rhs
-
-
-{-
-compareSmallString :: SmallString -> SmallString -> Ordering
 compareSmallString (SmallString lhsLen lhsAry) (SmallString rhsLen rhsAry)
     = go (lhsLen-1) (rhsLen-1)
  where
@@ -58,13 +52,13 @@ compareSmallString (SmallString lhsLen lhsAry) (SmallString rhsLen rhsAry)
        = case A.indexByteArray lhsAry lhsN `compare` (A.indexByteArray rhsAry rhsN :: Word8) of
            EQ -> go (lhsN-1) (rhsN-1)
            x  -> x
--}
+
 
 eqSmallString :: SmallString -> SmallString -> Bool
 eqSmallString lhsT@(SmallString lenL lhsA) rhsT@(SmallString lenR rhsA)
     | lenL /= lenR
         = False
-    | otherwise = lhsT `compareSmallString` rhsT == EQ
+    | otherwise = lhsT `compare` rhsT == EQ
 
 -- | Convert a String into a SmallString.
 fromString :: String -> SmallString
