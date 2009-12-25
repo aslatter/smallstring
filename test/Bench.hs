@@ -22,6 +22,8 @@ main = do
   strings <- getStrings
   smallStrings <- getSmallStrings
 
+  let testSmallString = fromString "hello, world!"
+
   defaultMain
     [ bench "building set of strings" $
             nf Set.fromList strings
@@ -32,5 +34,11 @@ main = do
             nf nub strings
     , bench "nub on small strings" $
             nf nub smallStrings
+
+    , bench "fromString \"hello, world!\"" $
+            nf fromString "hello, world!"
+
+    , bench "toString \"hello, world!\"" $
+            nf toString testSmallString
     ]
 

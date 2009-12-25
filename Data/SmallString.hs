@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-{-
+{-|
 
  The SmallString type is for storing small identifiers. We do not provide fast operations
  on strings - what we offer is low memory overead.
@@ -24,7 +24,8 @@ import System.IO.Unsafe (unsafePerformIO)
 import Data.Word (Word8)
 import Control.DeepSeq
 
--- | A space efficient representation of text.
+-- | A space efficient representation of text. This is like a strict ByteString, but
+-- with fewer features.
 data SmallString = SmallString
            {-# UNPACK #-} !Int --  length in bytes
            {-# UNPACK #-} !A.ByteArray -- byte array
@@ -65,19 +66,16 @@ fromString :: String -> SmallString
 fromString string
     = SmallString wordLen $ runST $ do
         ary <- A.newByteArray wordLen
-        mapM (uncurry $ A.writeByteArray ary) (zip [0..] wordList)
+        mapM_ (uncurry $ A.writeByteArray ary) (zip [0..] wordList)
         A.unsafeFreezeByteArray ary
  where
    wordLen = length wordList
-   wordList = UTF8.encode string -- I probably need some UTF normalizaion here
+   wordList = UTF8.encode string
 
 -- | Convert a SmallString into a String.
 toString :: SmallString -> String
-toString
-    = UTF8.decode . toBytes
+toString (SmallString len ary)
+    = UTF8.decode $ map (A.indexByteArray ary) [0 .. (len - 1)]
 
-toBytes :: SmallString -> [Word8]
-toBytes (SmallString len ary)
-    = map (A.indexByteArray ary) [0 .. (len - 1)]
 
 
