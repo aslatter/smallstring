@@ -37,7 +37,6 @@ main = do
 
     , bench "fromString \"hello, world!\"" $
             nf fromString "hello, world!"
-
     , bench "toString \"hello, world!\"" $
             nf toString testSmallString
     ]

@@ -3,10 +3,14 @@
 {-|
 
  The SmallString type is for storing small identifiers. We do not provide fast operations
- on strings - what we offer is low memory overead.
+ on strings - what we offer is low memory overhead.
 
- The Ord instance is not garanteed to be the same as that of the corresponding
+ The Ord instance is not garaunteed to be the same as that of the corresponding
  string.
+
+ Currently SmallStrings use NULL charecters as sentinels. This means that:
+
+ (toString . fromString) "hello\NULLworlds" == "hello"
 
  -}
 
@@ -26,9 +30,7 @@ import Control.DeepSeq
 
 -- | A space efficient representation of text. This is like a strict ByteString, but
 -- with fewer features.
-data SmallString = SmallString
-           {-# UNPACK #-} !Int --  length in bytes
-           {-# UNPACK #-} !A.ByteArray -- byte array
+newtype SmallString = SmallString A.ByteArray
 
 instance Eq SmallString where
     (==) = eqSmallString
@@ -41,32 +43,36 @@ instance Show SmallString where
 
 instance NFData SmallString
 
-
 compareSmallString :: SmallString -> SmallString -> Ordering
-compareSmallString (SmallString lhsLen lhsAry) (SmallString rhsLen rhsAry)
-    = go (lhsLen-1) (rhsLen-1)
+compareSmallString (SmallString lhsAry) (SmallString rhsAry)
+    = go 0
  where
-   go (-1) (-1)    = EQ
-   go (-1) _       = GT
-   go _ (-1)       = LT
-   go lhsN rhsN
-       = case A.indexByteArray lhsAry lhsN `compare` (A.indexByteArray rhsAry rhsN :: Word8) of
-           EQ -> go (lhsN-1) (rhsN-1)
-           x  -> x
-
+   go n
+       = case (A.indexByteArray lhsAry n :: Word8, A.indexByteArray rhsAry n) of
+           (0,0) -> EQ
+           (0,_) -> GT
+           (_,0) -> LT
+           (l,r) -> case l `compare` r of
+                     EQ -> go (n+1)
+                     x  -> x
 
 eqSmallString :: SmallString -> SmallString -> Bool
-eqSmallString lhsT@(SmallString lenL lhsA) rhsT@(SmallString lenR rhsA)
+eqSmallString lhsT@(SmallString lhsA) rhsT@(SmallString rhsA)
     | lenL /= lenR
         = False
     | otherwise = lhsT `compare` rhsT == EQ
 
+ where
+   lenL = A.sizeofByteArray lhsA
+   lenR = A.sizeofByteArray rhsA
+
 -- | Convert a String into a SmallString.
 fromString :: String -> SmallString
 fromString string
-    = SmallString wordLen $ runST $ do
-        ary <- A.newByteArray wordLen
-        mapM_ (uncurry $ A.writeByteArray ary) (zip [0..] wordList)
+    = SmallString $ runST $ do
+        ary <- A.newByteArray (wordLen+1)
+        mapM_ (uncurry $ A.writeByteArray ary) (zip [0..(wordLen-1)] wordList)
+        A.writeByteArray ary wordLen (0 :: Word8)
         A.unsafeFreezeByteArray ary
  where
    wordLen = length wordList
@@ -74,8 +80,12 @@ fromString string
 
 -- | Convert a SmallString into a String.
 toString :: SmallString -> String
-toString (SmallString len ary)
-    = UTF8.decode $ map (A.indexByteArray ary) [0 .. (len - 1)]
+toString (SmallString ary)
+    = UTF8.decode $ go 0
+
+ where go n = case A.indexByteArray ary n of
+                0 -> []
+                x -> x : go (n+1)
 
 
 
