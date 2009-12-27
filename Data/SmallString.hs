@@ -20,13 +20,12 @@ module Data.SmallString
     , toString
     ) where
 
-import Control.Monad.ST (runST)
-import qualified Data.Primitive.ByteArray as A
-import Data.Primitive.Addr()
+import qualified Data.ByteArray as A
 import qualified Codec.Binary.UTF8.String as UTF8
 import System.IO.Unsafe (unsafePerformIO)
 import Data.Word (Word8)
 import Control.DeepSeq
+import Foreign (unsafePerformIO)
 
 -- | A space efficient representation of text. This is like a strict ByteString, but
 -- with fewer features.
@@ -57,19 +56,14 @@ compareSmallString (SmallString lhsAry) (SmallString rhsAry)
                      x  -> x
 
 eqSmallString :: SmallString -> SmallString -> Bool
-eqSmallString lhsT@(SmallString lhsA) rhsT@(SmallString rhsA)
-    | lenL /= lenR
-        = False
-    | otherwise = lhsT `compare` rhsT == EQ
+eqSmallString lhs rhs
+    = lhs `compare` rhs == EQ
 
- where
-   lenL = A.sizeofByteArray lhsA
-   lenR = A.sizeofByteArray rhsA
 
 -- | Convert a String into a SmallString.
 fromString :: String -> SmallString
 fromString string
-    = SmallString $ runST $ do
+    = SmallString $ unsafePerformIO $ do
         ary <- A.newByteArray (wordLen+1)
         mapM_ (uncurry $ A.writeByteArray ary) (zip [0..(wordLen-1)] wordList)
         A.writeByteArray ary wordLen (0 :: Word8)
