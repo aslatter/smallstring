@@ -67,7 +67,7 @@ fromString string
         ary <- A.newByteArray (wordLen+1)
         mapM_ (uncurry $ A.writeByteArray ary) (zip [0..(wordLen-1)] wordList)
         A.writeByteArray ary wordLen (0 :: Word8)
-        A.unsafeFreezeByteArray ary
+        A.unsafeFreezeByteArray (ary :: A.IOByteArray)
  where
    wordLen = length wordList
    wordList = UTF8.encode string
