@@ -58,9 +58,6 @@ Library
   Build-depends:       base >=4 && < 5, deepseq >= 1.1 && < 1.2,
                        utf8-string >= 0.3 && < 0.4, bytearray
   
-  if impl(ghc)
-    Build-depends: primitive >= 0.2 && < 0.3
-
   -- Modules not exported by this package.
   -- Other-modules:       
   
