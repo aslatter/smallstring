@@ -44,7 +44,7 @@ compareSmallString (SmallString lhsAry) (SmallString rhsAry)
     = compare lhsAry rhsAry
 
 eqSmallString :: SmallString -> SmallString -> Bool
-eqSmallString lhs rhs
+eqSmallString (SmallString lhs) (SmallString rhs)
     = lhs == rhs
 
 -- | Convert a String into a SmallString.
