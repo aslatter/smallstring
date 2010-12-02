@@ -20,6 +20,8 @@ import qualified Data.SmallArray as A
 import qualified Codec.Binary.UTF8.String as UTF8
 import Data.Word (Word8)
 
+import Control.DeepSeq
+
 -- | A space efficient representation of text. This is like a strict ByteString, but
 -- with fewer features, and UTF preserving. Fow ASCII data, we're slightly smaller than
 -- ByteStrings for small strings.
@@ -33,6 +35,9 @@ instance Ord SmallString where
 
 instance Show SmallString where
     show = show . toString
+
+instance NFData SmallString where
+    rnf (SmallString arr) = rnf arr
 
 compareSmallString :: SmallString -> SmallString -> Ordering
 compareSmallString (SmallString lhsAry) (SmallString rhsAry)
