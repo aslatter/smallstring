@@ -5,7 +5,7 @@
  The SmallString type is for storing small identifiers. We do not provide fast operations
  on strings - what we offer is low memory overhead.
 
- The Ord instance is not garaunteed to be the same as that of the corresponding
+ The Ord instance is not guaranteed to be the same as that of the corresponding
  string.
 
  -}
