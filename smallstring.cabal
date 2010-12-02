@@ -13,7 +13,7 @@ Author:              Antoine Latter
 Maintainer:          aslatter@gmail.com
 Category:            Data
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.6
 
 Library
   Build-depends:       base == 4.*, utf8-string == 0.3.*, smallarray == 0.1.*,
