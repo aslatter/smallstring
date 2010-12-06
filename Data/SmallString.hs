@@ -19,6 +19,7 @@ module Data.SmallString
 import qualified Data.SmallArray as A
 import qualified Codec.Binary.UTF8.String as UTF8
 import Data.Word (Word8)
+import qualified Data.String as S ( IsString(..) )
 
 import Control.DeepSeq
 
@@ -38,6 +39,9 @@ instance Show SmallString where
 
 instance NFData SmallString where
     rnf (SmallString arr) = rnf arr
+
+instance S.IsString SmallString where
+    fromString = fromString
 
 compareSmallString :: SmallString -> SmallString -> Ordering
 compareSmallString (SmallString lhsAry) (SmallString rhsAry)
