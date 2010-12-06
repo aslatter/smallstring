@@ -14,12 +14,20 @@ module Data.SmallString
     ( SmallString
     , fromString
     , toString
+    , fromText
     ) where
 
 import qualified Data.SmallArray as A
+import qualified Data.SmallArray.Unsafe as A
+
 import qualified Codec.Binary.UTF8.String as UTF8
 import Data.Word (Word8)
 import qualified Data.String as S ( IsString(..) )
+
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Unsafe as B
 
 import Control.DeepSeq
 
@@ -60,3 +68,15 @@ fromString
 toString :: SmallString -> String
 toString (SmallString ary)
     = UTF8.decode . A.toList $ ary
+
+-- | Conver 'Text' into a SmallString
+fromText :: T.Text -> SmallString
+fromText = fromBS . T.encodeUtf8
+
+fromBS :: B.ByteString -> SmallString
+fromBS bs = SmallString $
+    let len = B.length bs
+    in A.run $ do
+      arr <- A.unsafeNew len
+      mapM_ (\ix -> A.unsafeWrite arr ix (B.unsafeIndex bs ix)) [0 .. len]
+      return arr
