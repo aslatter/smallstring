@@ -15,6 +15,7 @@ module Data.SmallString
     , fromString
     , toString
     , fromText
+    , toText
     ) where
 
 import qualified Data.SmallArray as A
@@ -27,9 +28,12 @@ import qualified Data.String as S ( IsString(..) )
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Internal as B
 import qualified Data.ByteString.Unsafe as B
 
 import Control.DeepSeq
+import Foreign.Ptr (Ptr, plusPtr)
+import Foreign.Storable (poke)
 
 -- | A space efficient representation of text. This is like a strict ByteString, but
 -- with fewer features, and UTF preserving. Fow ASCII data, we're slightly smaller than
@@ -73,6 +77,9 @@ toString (SmallString ary)
 fromText :: T.Text -> SmallString
 fromText = fromBS . T.encodeUtf8
 
+-- | Convert a 'SmallString' into a 'T.Text'.
+toText :: SmallString -> T.Text
+toText = T.decodeUtf8 . toBS
 fromBS :: B.ByteString -> SmallString
 fromBS bs = SmallString $
     let len = B.length bs
@@ -80,3 +87,15 @@ fromBS bs = SmallString $
       arr <- A.unsafeNew len
       mapM_ (\ix -> A.unsafeWrite arr ix (B.unsafeIndex bs ix)) [0 .. len]
       return arr
+
+-- | Convert a 'SmallString' into a 'B.ByteString'.  The 'B.ByteString' will
+-- contain UTF-8 encoded text.
+toBS :: SmallString -> B.ByteString
+toBS (SmallString ary) = B.unsafeCreate len (go ary 0)
+  where
+    len = A.length ary
+    go :: A.Array Word8 -> Int -> Ptr Word8 -> IO ()
+    go !ary !i !p
+        | i < len = do poke p (A.unsafeIndex ary i)
+                       go ary (i + 1) (p `plusPtr` 1)
+        | otherwise = return ()
