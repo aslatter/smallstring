@@ -4,7 +4,7 @@
 
  An immutable Unicode text type, optimized for low memory overhead.  A
  'SmallString' typically uses less memory than the corresponding 'T.Text'.  Use
- 'SmallText' when storing a large number of short texts, for example when
+ 'SmallString' when storing a large number of short texts, for example when
  indexing a map using words or short phrases.
 
  To manipulate a 'SmallString', first convert it into a 'T.Text'.  For more
