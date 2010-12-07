@@ -2,8 +2,14 @@
 
 {-|
 
- The SmallString type is for storing small identifiers. We do not provide fast operations
- on strings - what we offer is low memory overhead.
+ An immutable Unicode text type, optimized for low memory overhead.  A
+ 'SmallString' typically uses less memory than the corresponding 'T.Text'.  Use
+ 'SmallText' when storing a large number of short texts, for example when
+ indexing a map using words or short phrases.
+
+ To manipulate a 'SmallString', first convert it into a 'T.Text'.  For more
+ information on working with 'T.Text', see the @text@ package:
+ http://hackage.haskell.org/package/text
 
  The Ord instance is not guaranteed to be the same as that of the corresponding
  string.
@@ -35,9 +41,7 @@ import Control.DeepSeq
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (poke)
 
--- | A space efficient representation of text. This is like a strict ByteString, but
--- with fewer features, and UTF preserving. Fow ASCII data, we're slightly smaller than
--- ByteStrings for small strings.
+-- | A space efficient representation of Unicode text.
 newtype SmallString = SmallString (A.Array Word8)
 
 instance Eq SmallString where
@@ -63,23 +67,26 @@ eqSmallString :: SmallString -> SmallString -> Bool
 eqSmallString (SmallString lhs) (SmallString rhs)
     = lhs == rhs
 
--- | Convert a String into a SmallString.
+-- | Convert a 'String' into a 'SmallString'.
 fromString :: String -> SmallString
 fromString
     = SmallString . A.fromList . UTF8.encode
 
--- | Convert a SmallString into a String.
+-- | Convert a 'SmallString' into a 'String'.
 toString :: SmallString -> String
 toString (SmallString ary)
     = UTF8.decode . A.toList $ ary
 
--- | Conver 'Text' into a SmallString
+-- | Convert a 'T.Text' into a 'SmallString'.
 fromText :: T.Text -> SmallString
 fromText = fromBS . T.encodeUtf8
 
 -- | Convert a 'SmallString' into a 'T.Text'.
 toText :: SmallString -> T.Text
 toText = T.decodeUtf8 . toBS
+
+-- | Convert a 'B.ByteString' into a 'SmallString', assuming that the
+-- 'B.ByteString' contains UTF-8 encoded text.  This assumption is not checked.
 fromBS :: B.ByteString -> SmallString
 fromBS bs = SmallString $
     let len = B.length bs
