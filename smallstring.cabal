@@ -1,5 +1,5 @@
 Name:                smallstring
-Version:             0.1.0
+Version:             0.1.1
 Synopsis:            A string type optimized for size in memory
 Description:         A string type offering very little memory overhead. No
                      string manipulation functions are offered.
