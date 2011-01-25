@@ -15,6 +15,8 @@ import Data.List (nub)
 import qualified Data.Text as T
 import qualified Data.ByteString.Char8 as B
 
+import Data.Hashable (hash)
+
 getStrings :: IO [String]
 getStrings = lines `fmap` readFile "words.txt"
 
@@ -46,13 +48,17 @@ main = do
     , bench "nub on small strings" $
             nf nub smallStrings
 
-    , bench "fromString \"hello, world!\"" $
-            nf fromString "hello, world!"
-    , bench "toString \"hello, world!\"" $
-            nf toString testSmallString
+    , bench "hash on string" $
+            whnf hash str
+    , bench "hash on smallstring" $
+            whnf hash smallStr
 
     , bgroup "conversions"
             [ bench "fromText" $ nf fromText testText
+            , bench "fromString \"hello, world!\"" $
+                    nf fromString "hello, world!"
+            , bench "toString \"hello, world!\"" $
+                    nf toString testSmallString
             ]
     ]
 
@@ -60,3 +66,6 @@ str = "the quick brown fox jumped over the lazy dog"
 
 testText :: T.Text
 testText = T.pack str
+
+smallStr :: SmallString
+smallStr = fromString str
