@@ -41,6 +41,8 @@ import Control.DeepSeq
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (poke)
 
+import Data.Hashable as H
+
 -- | A space efficient representation of Unicode text.
 newtype SmallString = SmallString (A.Array Word8)
 
@@ -58,6 +60,9 @@ instance NFData SmallString where
 
 instance S.IsString SmallString where
     fromString = fromString
+
+instance H.Hashable SmallString where
+    hash (SmallString arr) = H.hash arr
 
 compareSmallString :: SmallString -> SmallString -> Ordering
 compareSmallString (SmallString lhsAry) (SmallString rhsAry)
