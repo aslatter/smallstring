@@ -1,5 +1,5 @@
 Name:                smallstring
-Version:             0.3.1
+Version:             0.3.2
 Synopsis:            A Unicode text type, optimized for low memory overhead
 Description:         A Unicode text type, optimized for low memory overhead.
                      No string manipulation functions are offered.
